@@ -36,7 +36,7 @@ class AuthBlfoc extends Bloc<AuthEvent, AuthState> {
       await sharedPreferences.setBool('isAuthenticated', true);
       yield Authenticated();
     } else {
-      yield LoginFailed();
+      yield LoginFailed(); //if something is going to be wrong with Internet, this will work
     }
   }
 
