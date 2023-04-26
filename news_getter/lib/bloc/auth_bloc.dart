@@ -12,7 +12,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthBloc({required this.sharedPreferences}) : super(AuthInitial());
 
   @override
-  Stream<AuthState> mapEventToState(AuthEvent event) async* {
+  Stream<AuthState> mapEventToStates(AuthEvent event) async* {
     if (event is LoginEvent) {
       yield AuthLoading();
       try {
