@@ -87,11 +87,11 @@ class _AuthScreenState extends State<AuthScreen> {
                         ],
                       ),
                     );
-                  })))); // Replace with your UI
+                  }))));
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
         } else {
-          return CircularProgressIndicator();
+          return const CircularProgressIndicator();
         }
       },
     );
