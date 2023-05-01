@@ -8,12 +8,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SharedPreferences prefs = await SharedPreferences.getInstance();
+  prefs.setBool('isLoggedIn', false);
   runApp(MyApp(prefs: prefs));
 }
 
 class MyApp extends StatelessWidget {
   final SharedPreferences prefs;
-  MyApp({required this.prefs});
+  const MyApp({required this.prefs});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +23,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(primarySwatch: Colors.blue),
       home: BlocProvider<AuthBloc>(
         create: (_) => AuthBloc(sharedPreferences: prefs)..add(AppStarted()),
-        child: AuthScreen(),
+        child: const AuthScreen(),
       ),
       routes: {
         '/home': (context) => const HomeScreen(),
