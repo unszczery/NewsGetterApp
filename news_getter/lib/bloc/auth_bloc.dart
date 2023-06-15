@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:news_getter/repository/auth_repository.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:news_getter/components/secure_storage.dart';
@@ -13,13 +14,15 @@ part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   late bool loggedIn;
-  late SecureStorage secureStorage;
+  final AuthRepository authRepository;
 
-  AuthBloc({required this.secureStorage, this.loggedIn = false})
+  AuthBloc({required this.authRepository, this.loggedIn = false})
       : super(AuthInitial()) {
     on<RegisterEvent>(_mapRegisterEventToState,
         transformer: bloc_concurrency.sequential());
     on<LoginEvent>(_mapLoginEventToState,
+        transformer: bloc_concurrency.sequential());
+    on<GoogleSignInEvent>(_mapGoogleSignInEventToState,
         transformer: bloc_concurrency.sequential());
   }
 
@@ -27,14 +30,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       RegisterEvent event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     try {
-      final email = event.email;
-      final password = event.password;
-      secureStorage.setUserName(email.toString());
-      secureStorage.setUserPassword(password.toString());
+      await authRepository.signUp(email: event.email, password: event.password);
       emit(AuthSuccess());
       loggedIn = true;
     } catch (e) {
       emit(AuthFailure(errorMessage: e.toString()));
+      emit(UnAuthenticated());
     }
   }
 
@@ -42,20 +43,32 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       LoginEvent event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     try {
-      final email = event.email;
-      final password = event.password;
-      final savedEmail = await secureStorage.getUserEmail();
-      final savedPassword = await secureStorage.getUserPassword();
-      if (email == savedEmail && password == savedPassword) {
-        emit(AuthSuccess());
-        loggedIn = true;
-      } else {
-        loggedIn = false;
-        emit(AuthFailure(errorMessage: 'Invalid email or password'));
-      }
+      await authRepository.signIn(email: event.email, password: event.password);
+
+      emit(AuthSuccess());
+      loggedIn = true;
     } catch (e) {
       emit(AuthFailure(errorMessage: e.toString()));
+      emit(UnAuthenticated());
     }
+  }
+
+  Future<void> _mapGoogleSignInEventToState(
+      GoogleSignInEvent event, Emitter<AuthState> emit) async {
+    emit(AuthLoading());
+    try {
+      await authRepository.singInWithGoogle();
+      emit(AuthSuccess());
+    } catch (e) {
+      emit(AuthFailure(errorMessage: e.toString()));
+      emit(UnAuthenticated());
+    }
+  }
+
+  Future<void> _mapSignOutEventToState() async {
+    emit(AuthLoading());
+    await authRepository.signOut();
+    emit(UnAuthenticated());
   }
 }
 

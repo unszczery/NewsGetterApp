@@ -1,5 +1,3 @@
-
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -58,13 +56,11 @@ class AuthRepository {
     }
   }
 
-  Future<void> signOut(){
-    try{
+  Future<void> signOut() async {
+    try {
       await _firebaseAuth.signOut();
     } catch (e) {
       throw Exception(e.toString);
-   }   
     }
-
-
+  }
 }
